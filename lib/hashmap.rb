@@ -24,12 +24,13 @@ class HashMap
   def set(key, value)
     grow_table if length.positive? && (length.to_f / @table.length) >= LOAD_FACTOR
     hash_code = hash(key)
+    bucket = @table[hash_code]
 
-    if @table[hash_code].nil?
+    if bucket.nil?
       @table[hash_code] = { key => value }
-    elsif @table[hash_code].is_a?(Hash) && @table[hash_code].key?(key)
+    elsif bucket.is_a?(Hash) && @table[hash_code].key?(key)
       @table[hash_code][key] = value
-    elsif @table[hash_code].is_a?(Array)
+    elsif bucket.is_a?(Array)
       @table[hash_code].push({ key => value })
     else
       prev_hash = @table[hash_code]
@@ -39,37 +40,39 @@ class HashMap
 
   def get(key)
     hash_code = hash(key)
+    bucket = @table[hash_code]
     return nil if @table[hash_code].nil?
 
-    if @table[hash_code].is_a?(Array)
+    if bucket.is_a?(Array)
       @table[hash_code].each { |h| return h.values if h.key?(key) }
-    elsif @table[hash_code].key?(key)
+    elsif bucket.key?(key)
       @table[hash_code][key]
     end
   end
 
   def has?(key)
     hash_code = hash(key)
+    bucket = @table[hash_code]
     return false if @table[hash_code].nil?
 
-    if @table[hash_code].is_a?(Array)
-      @table[hash_code].any? { |h| h.key(key) }
+    if bucket.is_a?(Array)
+      bucket.any? { |h| h.key(key) }
     else
-      @table[hash_code].key?(key)
+      bucket.key?(key)
     end
   end
 
   def remove(key)
     hash_code = hash(key)
+    bucket = @table[hash_code]
 
     return nil if @table[hash_code].nil?
 
-    if @table[hash_code].is_a?(Array)
+    if bucket.is_a?(Array)
       @table[hash_code].delete_if { |h| h.key?(key) }
-    elsif @table[hash_code].key?(key)
-      entry = @table[hash_code]
+    elsif bucket.key?(key)
       @table[hash_code] = nil
-      entry
+      bucket
     end
   end
 
