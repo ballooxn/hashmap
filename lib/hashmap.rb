@@ -48,12 +48,49 @@ class Hashmap
   end
 
   def has?(key)
+    hash_code = hash(key)
+    if @table[hash_code].nil?
+      return false
+    elsif @table[hash_code].is_a?(Array)
+      @table[hash_code].each { |h| return true if h.keys.join == key }
+    elsif @table[hash_code].keys.join == key
+      return true
+    end
+
+    false
   end
 
   def remove(key)
+    hash_code = hash(key)
+
+    if @table[hash_code].nil?
+      return nil
+    elsif @table[hash_code].is_a?(Array)
+      @table[hash_code].each_with_index do |h, i|
+        if h.keys.join == key
+          @table[hash_code][i] = nil
+          return h
+        end
+      end
+    elsif @table[hash_code].keys.join == key
+      entry = @table[hash_code]
+      @table[hash_code] = nil
+      return entry
+    end
+
+    nil
   end
 
   def length
+    @table.reduce(0) do |sum, v|
+      if v.nil?
+        sum + 0
+      elsif v.is_a?(Array)
+        sum + v.reduce { |s, v| s + 1 unless v.nil? }
+      else
+        sum + 1
+      end
+    end
   end
 
   def clear

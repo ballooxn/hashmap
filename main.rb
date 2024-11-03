@@ -9,3 +9,6 @@ test.set("dog", "brown")
 test.set("elephant", "gray")
 
 p test.get("elephant")
+p test.length
+p test.remove("elephant")
+p test.length
