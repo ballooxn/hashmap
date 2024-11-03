@@ -83,10 +83,8 @@ class Hashmap
 
   def length
     @table.reduce(0) do |sum, v|
-      if v.nil?
+      if v.nil? || v.is_a?(Array)
         sum + 0
-      elsif v.is_a?(Array)
-        sum + v.reduce { |s, v| s + 1 unless v.nil? }
       else
         sum + 1
       end
@@ -94,14 +92,42 @@ class Hashmap
   end
 
   def clear
+    @table = Array.new(16)
   end
 
   def keys
+    @table.reduce([]) do |arr, v|
+      if v.nil?
+        arr
+      elsif v.is_a?(Array)
+        v.each { |hash| arr.push(hash.keys.join) }
+      else
+        arr.push(v.keys.join)
+      end
+    end
   end
 
   def values
+    @table.reduce([]) do |arr, v|
+      if v.nil?
+        arr
+      elsif v.is_a?(Array)
+        v.each { |hash| arr.push(hash.values.join) }
+      else
+        arr.push(v.values.join)
+      end
+    end
   end
 
   def entries
+    @table.reduce([]) do |arr, v|
+      if v.nil?
+        arr
+      elsif v.is_a?(Array)
+        v.each { |hash| arr.push([hash.keys.join, hash.values.join]) }
+      else
+        arr.push([v.keys.join, v.values.join])
+      end
+    end
   end
 end

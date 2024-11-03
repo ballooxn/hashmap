@@ -10,5 +10,8 @@ test.set("elephant", "gray")
 
 p test.get("elephant")
 p test.length
+p test.keys
+p test.values
+p test.entries
 p test.remove("elephant")
 p test.length
