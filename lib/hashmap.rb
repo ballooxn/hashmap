@@ -18,19 +18,25 @@ class Hashmap
     hashes = entries
 
     @table = Array.new(@table.length * 2)
-
+    p @table.length
     hashes.each do |v|
       set(v[0], v[1])
     end
+
+    p @table
   end
 
   def set(key, value)
-    if @table.length / length > LOAD_FACTOR then grow_table
+    occupied_length = length
+    current_load = (occupied_length / @table.length.to_f).round(2)
+    grow_table if !occupied_length.zero? && current_load >= LOAD_FACTOR
 
     hash_code = hash(key)
 
-    if @table[hash_code].nil? || @table[hash_code].keys.join == key
+    if @table[hash_code].nil?
       @table[hash_code] = { key => value }
+    elsif !@table[hash_code].is_a?(Array) && @table[hash_code].keys.join == key
+      @table[hash_code][key] = value
 
     elsif @table[hash_code].is_a?(Array)
       @table[hash_code].push({ key => value })
@@ -64,7 +70,10 @@ class Hashmap
     if @table[hash_code].nil?
       return false
     elsif @table[hash_code].is_a?(Array)
-      @table[hash_code].each { |h| return true if h.keys.join == key }
+      @table[hash_code].each do |h|
+        next if h.nil?
+        return true if h.keys.join == key
+      end
     elsif @table[hash_code].keys.join == key
       return true
     end
@@ -95,8 +104,11 @@ class Hashmap
 
   def length
     @table.reduce(0) do |sum, v|
-      if v.nil? || v.is_a?(Array)
+      if v.nil?
         sum + 0
+      elsif v.is_a?(Array)
+        v.each { |_| sum += 1 }
+        sum
       else
         sum + 1
       end
@@ -112,7 +124,12 @@ class Hashmap
       if v.nil?
         arr
       elsif v.is_a?(Array)
-        v.each { |hash| arr.push(hash.keys.join) }
+        v.each do |hash|
+          next if hash.nil?
+
+          arr.push(hash.keys.join)
+        end
+        arr
       else
         arr.push(v.keys.join)
       end
@@ -124,7 +141,12 @@ class Hashmap
       if v.nil?
         arr
       elsif v.is_a?(Array)
-        v.each { |hash| arr.push(hash.values.join) }
+        v.each do |hash|
+          next if hash.nil?
+
+          arr.push(hash.values.join)
+        end
+        arr
       else
         arr.push(v.values.join)
       end
@@ -137,6 +159,7 @@ class Hashmap
         arr
       elsif v.is_a?(Array)
         v.each { |hash| arr.push([hash.keys.join, hash.values.join]) }
+        arr
       else
         arr.push([v.keys.join, v.values.join])
       end
