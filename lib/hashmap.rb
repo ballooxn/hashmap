@@ -1,4 +1,4 @@
-class Hashmap
+class HashMap
   LOAD_FACTOR = 0.75
 
   def initialize
@@ -18,100 +18,68 @@ class Hashmap
     hashes = entries
 
     @table = Array.new(@table.length * 2)
-    p @table.length
-    hashes.each do |v|
-      set(v[0], v[1])
-    end
-
-    p @table
+    hashes.each { |v| set(v[0], v[1]) }
   end
 
   def set(key, value)
-    occupied_length = length
-    current_load = (occupied_length / @table.length.to_f).round(2)
-    grow_table if !occupied_length.zero? && current_load >= LOAD_FACTOR
-
+    grow_table if length.positive? && (length.to_f / @table.length) >= LOAD_FACTOR
     hash_code = hash(key)
 
     if @table[hash_code].nil?
       @table[hash_code] = { key => value }
-    elsif !@table[hash_code].is_a?(Array) && @table[hash_code].keys.join == key
+    elsif @table[hash_code].is_a?(Hash) && @table[hash_code].key?(key)
       @table[hash_code][key] = value
-
     elsif @table[hash_code].is_a?(Array)
       @table[hash_code].push({ key => value })
-
-    elsif !@table[hash_code].nil? && @table[hash_code].keys.join != key
-      prev_hash = @table[hash_code]
-      @table[hash_code] = Array.new(2)
-      @table[hash_code][0] = prev_hash
-      @table[hash_code][1] = { key => value }
     else
-      puts "ERROR!!!!"
+      prev_hash = @table[hash_code]
+      @table[hash_code] = [prev_hash, { key => value }]
     end
   end
 
   def get(key)
     hash_code = hash(key)
+    return nil if @table[hash_code].nil?
 
-    if @table[hash_code].nil?
-      return nil
-    elsif @table[hash_code].is_a?(Array)
-      @table[hash_code].each { |h| return h.values if h.keys.join == key }
-    elsif @table[hash_code].keys.join == key
-      return @table[hash_code][key]
+    if @table[hash_code].is_a?(Array)
+      @table[hash_code].each { |h| return h.values if h.key?(key) }
+    elsif @table[hash_code].key?(key)
+      @table[hash_code][key]
     end
-
-    nil
   end
 
   def has?(key)
     hash_code = hash(key)
-    if @table[hash_code].nil?
-      return false
-    elsif @table[hash_code].is_a?(Array)
-      @table[hash_code].each do |h|
-        next if h.nil?
-        return true if h.keys.join == key
-      end
-    elsif @table[hash_code].keys.join == key
-      return true
-    end
+    return false if @table[hash_code].nil?
 
-    false
+    if @table[hash_code].is_a?(Array)
+      @table[hash_code].any? { |h| h.key(key) }
+    else
+      @table[hash_code].key?(key)
+    end
   end
 
   def remove(key)
     hash_code = hash(key)
 
-    if @table[hash_code].nil?
-      return nil
-    elsif @table[hash_code].is_a?(Array)
-      @table[hash_code].each_with_index do |h, i|
-        if h.keys.join == key
-          @table[hash_code][i] = nil
-          return h
-        end
-      end
-    elsif @table[hash_code].keys.join == key
+    return nil if @table[hash_code].nil?
+
+    if @table[hash_code].is_a?(Array)
+      @table[hash_code].delete_if { |h| h.key?(key) }
+    elsif @table[hash_code].key?(key)
       entry = @table[hash_code]
       @table[hash_code] = nil
-      return entry
+      entry
     end
-
-    nil
   end
 
   def length
     @table.reduce(0) do |sum, v|
-      if v.nil?
-        sum + 0
-      elsif v.is_a?(Array)
-        v.each { |_| sum += 1 }
-        sum
-      else
-        sum + 1
-      end
+      sum + (if v.is_a?(Array)
+               v.length
+             else
+               (v.nil? ? 0 : 1)
+             end)
     end
   end
 

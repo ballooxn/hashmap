@@ -1,6 +1,6 @@
 require_relative "lib/hashmap"
 
-test = Hashmap.new
+test = HashMap.new
 
 test.set("apple", "red")
 test.set("banana", "yellow")
