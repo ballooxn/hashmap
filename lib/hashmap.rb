@@ -11,19 +11,19 @@ class Hashmap
 
     key.each_char { |char| code = (prime * code) + char.ord }
 
-    code
+    code % @table.length
   end
 
   def set(key, value)
-    hash_code = hash(key) % table.length
+    hash_code = hash(key)
 
-    if @table[hash_code].nil? || @table[hash_code].keys == key
+    if @table[hash_code].nil? || @table[hash_code].keys.join == key
       @table[hash_code] = { key => value }
 
-    elsif @table[hash_code].is_A(Array)
+    elsif @table[hash_code].is_a?(Array)
       @table[hash_code].push({ key => value })
 
-    elsif !@table[hash_code].nil? && @table[hash_code].keys != key
+    elsif !@table[hash_code].nil? && @table[hash_code].keys.join != key
       prev_hash = @table[hash_code]
       @table[hash_code] = Array.new(2)
       @table[hash_code][0] = prev_hash
@@ -36,11 +36,14 @@ class Hashmap
   def get(key)
     hash_code = hash(key)
 
-    if @table[hash_code].is_A(Array)
-      @table[hash_code].each { |h| return h.values if h.keys == key }
-    elsif @table[hash_code].keys == key
+    if @table[hash_code].nil?
+      return nil
+    elsif @table[hash_code].is_a?(Array)
+      @table[hash_code].each { |h| return h.values if h.keys.join == key }
+    elsif @table[hash_code].keys.join == key
       return @table[hash_code][key]
     end
+
     nil
   end
 

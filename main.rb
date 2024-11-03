@@ -1,5 +1,11 @@
-arr = []
+require_relative "lib/hashmap"
 
-arr[0] = { key: 1 }
+test = Hashmap.new
 
-puts arr[0].key
+test.set("apple", "red")
+test.set("banana", "yellow")
+test.set("carrot", "orange")
+test.set("dog", "brown")
+test.set("elephant", "gray")
+
+p test.get("elephant")
