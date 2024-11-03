@@ -1,5 +1,5 @@
 class Hashmap
-  LOAD_FACTOR = 0.8
+  LOAD_FACTOR = 0.75
 
   def initialize
     @table = Array.new(16)
@@ -14,7 +14,19 @@ class Hashmap
     code % @table.length
   end
 
+  def grow_table
+    hashes = entries
+
+    @table = Array.new(@table.length * 2)
+
+    hashes.each do |v|
+      set(v[0], v[1])
+    end
+  end
+
   def set(key, value)
+    if @table.length / length > LOAD_FACTOR then grow_table
+
     hash_code = hash(key)
 
     if @table[hash_code].nil? || @table[hash_code].keys.join == key
